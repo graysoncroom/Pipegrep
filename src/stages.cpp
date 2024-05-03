@@ -11,12 +11,22 @@ void stage1(Buffer &buff1, int buffsize, const std::string &dirPath) {
 
   if ((dir = opendir(dirPath.c_str())) != NULL) {
     while ((entry = readdir(dir)) != NULL) {
+      std::string entryName{entry->d_name};
+
+      if (entryName == "." || entryName == "..") {
+        continue;
+      }
+
       if (entry->d_type == DT_REG) { // if it is a regular file then...
         std::unique_lock<std::mutex> lock(buff1.mtx);
         buff1.cv.wait(lock, [&] { return buff1.items.size() < buffsize; });
-        buff1.items.push_back(dirPath + "/" + std::string(entry->d_name)); // Store full path
+        buff1.items.push_back(dirPath + "/" + entryName); // Store full path
         lock.unlock();
         buff1.cv.notify_one();
+      }
+      else if (entry->d_type == DT_DIR) {
+        std::string subdirectory_path = dirPath + "/" + entryName;
+        stage1(buff1, buffsize, subdirectory_path);
       }
     }
     closedir(dir);

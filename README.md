@@ -22,3 +22,7 @@ make && cd ./src && ../bin/pipegrep -1 -1 -1 -1 if
 In the first example, you will not get many matches since only the Makefile contains
 the string "if". So what we do here is go into the source directory for Pipegrep
 before calling the pipegrep executable as to get more matches.
+
+## Note
+
+We implemented recursive subdirectory file searching for the addition 20% bonus point credit.
