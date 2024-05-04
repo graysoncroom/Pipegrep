@@ -20,7 +20,7 @@ void stage1(Buffer &buff1, int buffsize, const std::string &dirPath) {
       }
 
       if (entry->d_type == DT_REG) { // if it is a regular file then...
-        std::unique_lock<std::mutex> lock(buff1.mtx); // acquire buff1 mutex
+        std::unique_lock<std::mutex> lock(buff1.mtx); // construct buff1 mutex lock
         // wait until the buffer has at least 1 element's worth of storage
         // capactiy (up to buffsize as given by the user through a command
         // line argument)
@@ -61,7 +61,7 @@ void stage2(Buffer &buff1, Buffer &buff2, int buffsize, int filesize, int uid, i
   std::string filename;
 
   while (true) {
-    // acquire the mutex from buff1
+    // construct the buff1 input buffer mutex lock
     std::unique_lock<std::mutex> lock(buff1.mtx);
 
     // wait until buff1 contains new items or buff1 has signaled the end of
@@ -105,7 +105,7 @@ void stage2(Buffer &buff1, Buffer &buff2, int buffsize, int filesize, int uid, i
       if ((filesize == -1 || fileStat.st_size > filesize) &&
                (uid == -1 || fileStat.st_uid == uid)      &&
                (gid == -1 || fileStat.st_gid == gid)) {
-        // acquire lock for buff2's mutex since we're going to be adding files
+        // construct lock for buff2's mutex since we're going to be adding files
         // that passed the above condition check to it
         std::unique_lock<std::mutex> lock2(buff2.mtx);
         // wait until there's room in the buffer buff2
@@ -143,7 +143,7 @@ void stage3(Buffer &buff2, Buffer &buff3, int buffsize) {
   std::string filename;
 
   while (true) {
-    std::unique_lock<std::mutex> lock(buff2.mtx); // acquire lock for buff2
+    std::unique_lock<std::mutex> lock(buff2.mtx); // construct lock for buff2's mutex
     // same as in stage1/stage2
     buff2.cv.wait(lock, [&] { return !buff2.items.empty() || buff2.done; });
 
@@ -171,7 +171,7 @@ void stage3(Buffer &buff2, Buffer &buff3, int buffsize) {
     int lineNumber = 0;
     if (file.is_open()) { // make sure it opened correctly
       while (std::getline(file, line)) { // for each line in the file
-        std::unique_lock<std::mutex> lock3(buff3.mtx); // acquire buff3 mutex
+        std::unique_lock<std::mutex> lock3(buff3.mtx); // construct buff3 mutex lock
         // wait until buff3 has more room
         buff3.cv.wait(lock3, [&] { return buff3.items.size() < buffsize; });
         // add the filename, linenumber, and line itself (contents) to buff3
@@ -199,7 +199,7 @@ void stage4(Buffer &buff3, Buffer &buff4, int buffsize, const std::string &searc
   std::string lineData;
 
   while (true) {
-    std::unique_lock<std::mutex> lock(buff3.mtx); // acquire buff3 mutex
+    std::unique_lock<std::mutex> lock(buff3.mtx); // construct buff3 mutex lock
     // wait until buff3 has an item or stage3 indicates it is done producing items
     buff3.cv.wait(lock, [&] { return !buff3.items.empty() || buff3.done; });
 
@@ -230,7 +230,7 @@ void stage4(Buffer &buff3, Buffer &buff4, int buffsize, const std::string &searc
     // which could be conflated with lineNumber)
     std::size_t pos = lineData.find_last_of(':');
     if (pos != std::string::npos && lineData.substr(pos + 1).find(searchString) != std::string::npos) {
-      std::unique_lock<std::mutex> lock2(buff4.mtx); // acquire buff4 mutex
+      std::unique_lock<std::mutex> lock2(buff4.mtx); // construct buff4 mutex lock
       // wait until there's room in buff4 because we want to add the found searchstring
       buff4.cv.wait(lock2, [&] { return buff4.items.size() < buffsize; });
       // pass lineData along from buff3 to buff4 if we found it and we aren't
@@ -268,7 +268,7 @@ void stage5(Buffer &buff4) {
   int matchCount = 0;
 
   while (true) {
-    std::unique_lock<std::mutex> lock(buff4.mtx); // acquire buff4 mutex
+    std::unique_lock<std::mutex> lock(buff4.mtx); // construct buff4 mutex lock
     // wait until there's a new buff4 item or stage4 says it's done producing into buff4
     buff4.cv.wait(lock, [&] { return !buff4.items.empty() || buff4.done; });
 
