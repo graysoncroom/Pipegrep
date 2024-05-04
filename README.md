@@ -39,6 +39,7 @@ The other stages, namely, Stage 1 through 4, all take (among other things) two B
 Each Stage has one critical region for each buffer argument.
 
 The general structure of each of the critical sections is as follows:
+
     1. Stage1: Once the current directory is opened, we look through each of the
     entires using the `readdir` C syscall wrapper. Whenever the entry is a regular
     file, we construct a *std::unique_lock<std::mutex>* and pass in buffer1's mutex.
