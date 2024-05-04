@@ -1,3 +1,6 @@
+CS 4348 Programming Project 4 
+worked on by William Grayson Croom wgc180002 and Ashton Smith ajs190019
+
 # Pipegrep
 
 Project 4 for Operating Systems
@@ -28,7 +31,7 @@ before calling the pipegrep executable as to get more matches.
 1. All functionality described in the project description has been implemented and tested.
 The results match the output of the normal grep command in our tests.
 
-2. TODO: (a description of your critical sections)
+2. Description of your critical sections
 Generally, critical sections are protected by mutex objects and unique_lock is used to acquire 
 and release them.
 We can find  critical sections frequently in cases such as:
@@ -53,17 +56,28 @@ We can find  critical sections frequently in cases such as:
     a second critical section when we get buff4.mtx where we wait for buff4.cv to be notified, 
     and then add the line to buff4.items and then the lock is released.
 
--Very similar to stage 2, 3 and 4, in stage5() we use the unique lock buff4.mtx in the while loop to
-    gather what line was passed through from stage 4, and then we release the lock after we're done.
+-Very similar to stage 2, 3 and 4, in stage5() we use the unique lock buff4.mtx in the while 
+    loop to gather what line was passed through from stage 4, and then we release the lock after
+    we're done.
 
-3. TODO: (the buffer size that gave optimal performance for 30 or more files)
-In order to do this one, you'll need to run an experiment and talk about how you
-did it. It mentions on page 4 that this will make up a large chunk of our grade.
-Talk about the buffer size that gave optimal performance for 30 or more files.
-In order to talk about this we will need to test the program on 30 (or more) files with text,
-time it with different buffer sizes, and figure out which ran the fastest.
+3. Buffer size that gave optimal performance for 30 or more files
+I ran an experiment where I varied the size of the buffer between each run of pipegrep.
+To do this I simply changed the length of the buffer passed as argv[1] and ran it 12 times 
+before averaging the collected runtimes. Each of the 31 files varied in "if"s from 1 to hundreds, 
+and number of lines per file was anywhere from 200 to 40000 lines of around 20 characters length.
+Our buffer lengths tested ran from 1 to 50 with average runtimes like so:
+Buffer length 1: Average time = 2945.33 ms
+Buffer length 2: Average time = 2882.17 ms
+Buffer length 5: Average time = 2876 ms
+Buffer length 20: Average time = 3007 ms
+Buffer length 50: Average time = 3013.58 ms
+For us to determine the optimal buffer size we need to take into consideration the memory 
+overhead possibly imposed on the threads by an excessively long buffer, and that a shorter 
+buffer might not transfer enough per go for us to benefit with the management of lock and such 
+for each buffer transferred. This is why the data tends to lean towards somewhere above 1 and 
+under 20 being optimal buffer length for the program. From what was tested, 5 seems to be effective.
 
-4. TODO: (tell me in which stage you would add an additional thread to improve performance
+4. Which stage you would add an additional thread to improve performance
 In stage 2 we could benefit from an extra thread, as the filtering work between the files that do 
 and dont meet the critera could be pretty intensive with enough files. With a second thread we could
 split the task via parallel processing and potentially faster execution time of the whole process.
@@ -71,6 +85,6 @@ The other stages simply wouldnt benefit nearly as much as this specific one eith
 
 5. There are no known bugs in the code after extensive testing on local machines and cs2.
 
-6.  We implemented recursive subdirectory file searching for the addition 20% bonus point credit.
+6. We implemented recursive subdirectory file searching for the addition 20% bonus point credit.
 This can be found in the "else if" statement of the stage3 function definition in the stages.cpp
 file.
